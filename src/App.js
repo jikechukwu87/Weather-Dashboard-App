@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import axios from "axios";
 import SearchBar from "./SearchBar.js";
 import CurrentWeather from "./CurrentWeather.js";
@@ -19,7 +19,7 @@ function App() {
     JSON.parse(localStorage.getItem("recentSearches")) || []
   );
 
-  const fetchWeather = async (searchCity) => {
+  const fetchWeather = useCallback(async (searchCity) => {
     try {
       setLoading(true);
       setError("");
@@ -45,7 +45,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   useEffect(() => {
     if (city) fetchWeather(city);
