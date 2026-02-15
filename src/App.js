@@ -10,7 +10,7 @@ const API_KEY = "cd3390589f1b3b7cba8df01749f2fbe8";
 
 
 function App() {
-  const [city, setCity] = useState("Lagos"); 
+  const [city, setCity] = useState("Lagos");
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [unit, setUnit] = useState("metric");
@@ -26,28 +26,31 @@ function App() {
     }
   });
 
+  // ✅ Stable fetch function
   const fetchWeather = useCallback(
-    async (searchCity) => {
-      if (!searchCity) return;
+    async (cityName) => {
+      if (!cityName) return;
 
       try {
         setLoading(true);
         setError("");
 
         const weatherRes = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=${unit}&appid=${API_KEY}`
+          `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=${unit}&appid=${API_KEY}`
         );
 
         const forecastRes = await axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?q=${searchCity}&units=${unit}&appid=${API_KEY}`
+          `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=${unit}&appid=${API_KEY}`
         );
 
         setWeather(weatherRes.data);
         setForecast(forecastRes.data);
 
         const updatedRecent = [
-          searchCity,
-          ...recent.filter((c) => c.toLowerCase() !== searchCity.toLowerCase()),
+          cityName,
+          ...recent.filter(
+            (c) => c.toLowerCase() !== cityName.toLowerCase()
+          ),
         ].slice(0, 5);
 
         setRecent(updatedRecent);
@@ -65,16 +68,16 @@ function App() {
     [unit, recent]
   );
 
-  
+  // ✅ Proper dependency usage (Fixes Netlify CI error)
   useEffect(() => {
+    if (!city) return;
     fetchWeather(city);
-  }, []); 
+  }, [city, fetchWeather]);
 
-  useEffect(() => {
-    if (city) {
-      fetchWeather(city);
-    }
-  }, [unit]);
+  // Unit toggle handler
+  const handleUnitToggle = () => {
+    setUnit((prev) => (prev === "metric" ? "imperial" : "metric"));
+  };
 
   return (
     <div className="app">
@@ -83,18 +86,17 @@ function App() {
       <SearchBar
         onSearch={(value) => {
           setCity(value);
-          fetchWeather(value);
         }}
       />
 
-      <RecentSearches searches={recent} onSelect={fetchWeather} />
+      <RecentSearches
+        searches={recent}
+        onSelect={(selectedCity) => {
+          setCity(selectedCity);
+        }}
+      />
 
-      <button
-        className="unit-toggle"
-        onClick={() =>
-          setUnit((prev) => (prev === "metric" ? "imperial" : "metric"))
-        }
-      >
+      <button className="unit-toggle" onClick={handleUnitToggle}>
         Switch to {unit === "metric" ? "°F" : "°C"}
       </button>
 
