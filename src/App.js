@@ -47,9 +47,11 @@ function App() {
     }
   });
 
-  useEffect(() => {
-    if (city) fetchWeather(city);
-  }, [unit]);
+ useEffect(() => {
+  if (Nigeria) {
+    fetchWeather(Nigeria);
+  }
+}, [Nigeria, fetchWeather]);
 
   return (
     <div className="app">
